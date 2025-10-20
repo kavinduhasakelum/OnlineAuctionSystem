@@ -1,5 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../api/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,13 +16,19 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you would typically authenticate with your backend
-    console.log('Login attempt:', formData);
-    alert('Login successful!');
-    navigate('/');
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await api.post("/UsersApi/login", {
+      email: formData.email,
+      password: formData.password,
+    });
+    console.log("✅ Login success:", response.data);
+  } catch (err) {
+    console.error("❌ Login failed:", err.response?.data || err.message);
+  }
+};
 
   return (
     <div className="container mt-4">

@@ -1,5 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../api/api';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -33,10 +34,25 @@ const Register = () => {
       return;
     }
 
-    // Here you would typically send the data to your backend
-    console.log('Registration data:', formData);
+    try {
+    // Prepare payload matching backend
+    const payload = {
+      FirstName: formData.firstName,
+      LastName: formData.lastName,
+      Email: formData.email,
+      Password: formData.password,
+      Role: 'Buyer' // default role
+    };
+
+    const response = await api.post('/api/usersapi/register', payload);
+
+    console.log('✅ Registration success:', response.data);
     alert('Registration successful! Welcome to Elite Auctions!');
-    navigate('/');
+    navigate('/login'); // redirect to login after successful registration
+  } catch (error) {
+    console.error('❌ Registration failed:', error.response?.data || error.message);
+    alert('Registration failed: ' + (error.response?.data || error.message));
+  }
   };
 
   return (
