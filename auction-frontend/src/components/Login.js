@@ -20,13 +20,30 @@ const Login = () => {
   e.preventDefault();
 
   try {
-    const response = await api.post("/UsersApi/login", {
+    const response = await api.post("/usersapi/login", {
       email: formData.email,
       password: formData.password,
     });
+
     console.log("✅ Login success:", response.data);
-  } catch (err) {
-    console.error("❌ Login failed:", err.response?.data || err.message);
+
+    const { token, user } = response.data;
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+
+    // Redirect based on role
+    if (user.role === "Buyer") {
+      navigate("/buyer/home");
+    } else if (user.role === "Seller") {
+      navigate("/seller/home");
+    } else if (user.role === "Admin") {
+      navigate("/admin/home");
+    } else {
+      navigate("/");
+    }
+  } catch (error) {
+    console.error("❌ Login failed:", error.response?.data || error.message);
+    alert(error.response?.data?.message || "Invalid credentials!");
   }
 };
 

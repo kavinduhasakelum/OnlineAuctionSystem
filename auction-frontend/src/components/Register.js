@@ -10,7 +10,8 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false
+    agreeToTerms: false,
+    role: 'Buyer' // default role
   });
 
   const handleChange = (e) => {
@@ -41,10 +42,10 @@ const Register = () => {
       LastName: formData.lastName,
       Email: formData.email,
       Password: formData.password,
-      Role: 'Buyer' // default role
+      Role: formData.role
     };
 
-    const response = await api.post('/api/usersapi/register', payload);
+    const response = await api.post('/usersapi/register', payload);
 
     console.log('✅ Registration success:', response.data);
     alert('Registration successful! Welcome to Elite Auctions!');
@@ -140,6 +141,22 @@ const Register = () => {
                       required
                     />
                   </div>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="role" className="form-label fw-bold">Select Role</label>
+                  <select
+                    id="role"
+                    name="role"
+                    className="form-select"
+                    value={formData.role || 'Buyer'}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="Buyer">Buyer</option>
+                    <option value="Seller">Seller</option>
+                    <option value="Admin">Admin</option>
+                  </select>
                 </div>
 
                 <div className="mb-4">
