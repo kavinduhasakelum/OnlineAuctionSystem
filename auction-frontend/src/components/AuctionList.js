@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form, InputGroup, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import api from '../api/api';
 
 const AuctionList = () => {
   const [auctions, setAuctions] = useState([]);
@@ -18,46 +19,14 @@ const AuctionList = () => {
   }, [auctions, searchTerm, category]);
 
   const fetchAuctions = async () => {
-    try {
-      // Mock data
-      const mockAuctions = [
-        {
-          id: 1,
-          title: 'Vintage Rolex Watch',
-          description: 'Beautiful vintage Rolex from 1960s in excellent condition',
-          currentBid: 2500,
-          imageUrl: 'https://via.placeholder.com/300x200/007bff/ffffff?text=Rolex+Watch',
-          endTime: '2025-10-30T23:59:59',
-          category: 'Jewelry',
-          status: 'Active'
-        },
-        {
-          id: 2,
-          title: 'MacBook Pro 2023',
-          description: 'Brand new MacBook Pro 16-inch with M2 chip',
-          currentBid: 2200,
-          imageUrl: 'https://via.placeholder.com/300x200/6f42c1/ffffff?text=MacBook+Pro',
-          endTime: '2025-10-25T18:30:00',
-          category: 'Electronics',
-          status: 'Active'
-        },
-        {
-          id: 3,
-          title: 'Antique Persian Rug',
-          description: 'Handwoven Persian rug from 19th century',
-          currentBid: 1800,
-          imageUrl: 'https://via.placeholder.com/300x200/28a745/ffffff?text=Persian+Rug',
-          endTime: '2025-10-28T20:00:00',
-          category: 'Art',
-          status: 'Active'
-        }
-      ];
-      setAuctions(mockAuctions);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching auctions:', error);
-      setLoading(false);
-    }
+     try {
+    const res = await api.get("/AuctionsApi"); // replace with your backend endpoint
+    setAuctions(res.data); // use data from backend
+    setLoading(false);
+  } catch (error) {
+    console.error('Error fetching auctions:', error.response?.data || error.message);
+    setLoading(false);
+  }
   };
 
   const filterAuctions = () => {
@@ -155,7 +124,7 @@ const AuctionList = () => {
                   </Card.Text>
                   <Button 
                     as={Link} 
-                    to={\/auctions/\\} 
+                    to={`/auctions/${auction.id}`} 
                     variant="primary" 
                     className="w-100"
                   >
