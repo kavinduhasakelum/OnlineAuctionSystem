@@ -1,5 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../api/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,13 +16,36 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you would typically authenticate with your backend
-    console.log('Login attempt:', formData);
-    alert('Login successful!');
-    navigate('/');
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await api.post("/usersapi/login", {
+      email: formData.email,
+      password: formData.password,
+    });
+
+    console.log("✅ Login success:", response.data);
+
+    const { token, user } = response.data;
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+
+    // Redirect based on role
+    if (user.role === "Buyer") {
+      navigate("/buyer/home");
+    } else if (user.role === "Seller") {
+      navigate("/seller/home");
+    } else if (user.role === "Admin") {
+      navigate("/admin/home");
+    } else {
+      navigate("/");
+    }
+  } catch (error) {
+    console.error("❌ Login failed:", error.response?.data || error.message);
+    alert(error.response?.data?.message || "Invalid credentials!");
+  }
+};
 
   return (
     <div className="container mt-4">
