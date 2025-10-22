@@ -54,7 +54,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/auctions" element={<Auctions />} />
           <Route path="/categories" element={<Categories />} />
-          <Route path="/auction/:id" element={<AuctionDetail />} />
+          {/* <Route path="/auction/:id" element={<AuctionDetail />} /> */}
           <Route path="/" element={!user ? <Home /> : (
             user.role === "Buyer" ? <BuyerHome /> :
             user.role === "Seller" ? <SellerHome /> :
@@ -65,6 +65,11 @@ function App() {
           <Route path="/buyer/home" element={
             <PrivateRoute roles={['Buyer']}>
               <BuyerHome />
+            </PrivateRoute>
+          }/>
+          <Route path="/auction/:id" element={
+            <PrivateRoute roles={['Buyer']}>
+              <AuctionDetail />
             </PrivateRoute>
           }/>
           <Route path="/seller/home" element={
