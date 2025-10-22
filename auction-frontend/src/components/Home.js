@@ -1,33 +1,54 @@
-﻿import React from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../api/api';
 
 const Home = () => {
-  const featuredAuctions = [
-    {
-      id: 1,
-      title: 'Vintage Rolex Watch',
-      description: 'Beautiful vintage Rolex from 1960s in excellent condition',
-      currentBid: 2500,
-      imageUrl: 'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=400&h=300&fit=crop',
-      timeLeft: '2 days left'
-    },
-    {
-      id: 2,
-      title: 'MacBook Pro 2023',
-      description: 'Brand new MacBook Pro 16-inch with M2 chip',
-      currentBid: 2200,
-      imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=300&fit=crop',
-      timeLeft: '1 day left'
-    },
-    {
-      id: 3,
-      title: 'Antique Persian Rug',
-      description: 'Handwoven Persian rug from 19th century',
-      currentBid: 1800,
-      imageUrl: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400&h=300&fit=crop',
-      timeLeft: '3 days left'
-    }
-  ];
+  // const featuredAuctions = [
+  //   {
+  //     id: 1,
+  //     title: 'Vintage Rolex Watch',
+  //     description: 'Beautiful vintage Rolex from 1960s in excellent condition',
+  //     currentBid: 2500,
+  //     imageUrl: 'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=400&h=300&fit=crop',
+  //     timeLeft: '2 days left'
+  //   },
+  //   {
+  //     id: 2,
+  //     title: 'MacBook Pro 2023',
+  //     description: 'Brand new MacBook Pro 16-inch with M2 chip',
+  //     currentBid: 2200,
+  //     imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=300&fit=crop',
+  //     timeLeft: '1 day left'
+  //   },
+  //   {
+  //     id: 3,
+  //     title: 'Antique Persian Rug',
+  //     description: 'Handwoven Persian rug from 19th century',
+  //     currentBid: 1800,
+  //     imageUrl: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400&h=300&fit=crop',
+  //     timeLeft: '3 days left'
+  //   }
+  // ];
+  const [featuredAuctions, setFeaturedAuctions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchAuctions = async () => {
+      try {
+        const response = await api.get('/ProductsApi/active?limit=3');
+        setFeaturedAuctions(response.data);
+      } catch (err) {
+        console.error('Error fetching auctions:', err);
+        setError('Failed to load auctions.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAuctions();
+  }, []);
+
 
   const categories = [
     { name: 'Jewelry', icon: '💎', link: '/categories' },
@@ -60,31 +81,49 @@ const Home = () => {
       <div className="container">
         <h2 className="text-center mb-5 fw-bold">Featured Auctions</h2>
         <div className="row g-4">
-          {featuredAuctions.map(auction => (
-            <div key={auction.id} className="col-md-4">
-              <div className="card h-100 shadow-sm border-0 auction-card">
-                <img 
-                  src={auction.imageUrl} 
-                  className="card-img-top" 
-                  alt={auction.title}
-                  style={{ height: '250px', objectFit: 'cover' }}
-                />
-                <div className="card-body d-flex flex-column">
-                  <h5 className="card-title fw-bold">{auction.title}</h5>
-                  <p className="card-text text-muted flex-grow-1">{auction.description}</p>
-                  <div className="mt-auto">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <span className="h4 text-primary fw-bold"></span>
-                      <span className="badge bg-warning text-dark">{auction.timeLeft}</span>
+          {loading ? (
+            <p className="text-center">Loading auctions...</p>
+          ) : error ? (
+            <p className="text-center text-danger">{error}</p>
+          ) : featuredAuctions.length === 0 ? (
+            <p className="text-center text-muted">No active auctions found.</p>
+          ) : (
+            featuredAuctions.map(auction => (
+              <div key={auction.id} className="col-md-4">
+                <div className="card h-100 shadow-sm border-0 auction-card">
+                  <img 
+                    src={
+                      auction.images && auction.images.length > 0 
+                        ? auction.images[0].url 
+                        : 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400&h=300&fit=crop'
+                    }
+                    className="card-img-top" 
+                    alt={auction.name}
+                    style={{ height: '250px', objectFit: 'cover' }}
+                  />
+                  <div className="card-body d-flex flex-column">
+                    <h5 className="card-title fw-bold">{auction.name}</h5>
+                    <p className="card-text text-muted flex-grow-1">{auction.description}</p>
+                    <div className="mt-auto">
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <span className="h5 text-primary fw-bold">
+                          Rs. {auction.currentPrice.toLocaleString()}
+                        </span>
+                        <span className="badge bg-warning text-dark">
+                          {new Date(auction.endTime) > new Date() 
+                            ? 'Active' 
+                            : 'Ended'}
+                        </span>
+                      </div>
+                      <Link to={`/auction/${auction.id}`} className="btn btn-primary w-100 py-2 fw-bold">
+                        Place Bid
+                      </Link>
                     </div>
-                    <Link to={'/auction/' + auction.id} className="btn btn-primary w-100 py-2 fw-bold">
-                      Place Bid
-                    </Link>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Categories Section */}
