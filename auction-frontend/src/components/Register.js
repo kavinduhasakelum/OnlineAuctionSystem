@@ -1,16 +1,21 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register, loading, error, setError } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'Buyer',
     agreeToTerms: false
   });
+  const [localError, setLocalError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -18,25 +23,46 @@ const Register = () => {
       ...formData,
       [e.target.name]: value
     });
+    setLocalError('');
+    if (setError) setError(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLocalError('');
+    setSuccessMessage('');
     
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+      setLocalError('Passwords do not match!');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setLocalError('Password must be at least 6 characters long');
       return;
     }
 
     if (!formData.agreeToTerms) {
-      alert('Please agree to the terms and conditions');
+      setLocalError('Please agree to the terms and conditions');
       return;
     }
 
-    // Here you would typically send the data to your backend
-    console.log('Registration data:', formData);
-    alert('Registration successful! Welcome to Elite Auctions!');
-    navigate('/');
+    try {
+      const result = await register(
+        formData.firstName,
+        formData.lastName,
+        formData.email,
+        formData.password,
+        formData.role
+      );
+      
+      setSuccessMessage(result.message);
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    } catch (err) {
+      setLocalError(err.message || 'Registration failed. Please try again.');
+    }
   };
 
   return (
@@ -48,6 +74,18 @@ const Register = () => {
               <h3 className="mb-0">Create New Account</h3>
             </div>
             <div className="card-body p-4">
+              {(localError || error) && (
+                <div className="alert alert-danger" role="alert">
+                  {localError || error}
+                </div>
+              )}
+
+              {successMessage && (
+                <div className="alert alert-success" role="alert">
+                  {successMessage}
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit}>
                 <div className="row">
                   <div className="col-md-6 mb-3">
@@ -61,6 +99,7 @@ const Register = () => {
                       onChange={handleChange}
                       placeholder="Enter your first name"
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -75,6 +114,7 @@ const Register = () => {
                       onChange={handleChange}
                       placeholder="Enter your last name"
                       required
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -90,7 +130,23 @@ const Register = () => {
                     onChange={handleChange}
                     placeholder="Enter your email"
                     required
+                    disabled={loading}
                   />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="role" className="form-label fw-bold">I want to:</label>
+                  <select
+                    className="form-select"
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                    disabled={loading}
+                  >
+                    <option value="Buyer">Buy items (Buyer)</option>
+                    <option value="Seller">Sell items (Seller)</option>
+                  </select>
                 </div>
 
                 <div className="row">
@@ -105,9 +161,10 @@ const Register = () => {
                       onChange={handleChange}
                       placeholder="Create a password"
                       required
+                      disabled={loading}
                     />
                     <div className="form-text">
-                      Must be at least 8 characters
+                      Must be at least 6 characters
                     </div>
                   </div>
 
@@ -122,6 +179,7 @@ const Register = () => {
                       onChange={handleChange}
                       placeholder="Confirm your password"
                       required
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -136,6 +194,7 @@ const Register = () => {
                       checked={formData.agreeToTerms}
                       onChange={handleChange}
                       required
+                      disabled={loading}
                     />
                     <label className="form-check-label" htmlFor="agreeToTerms">
                       I agree to the <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>
@@ -144,8 +203,12 @@ const Register = () => {
                 </div>
 
                 <div className="d-grid mb-3">
-                  <button type="submit" className="btn btn-success btn-lg">
-                    Create Account
+                  <button 
+                    type="submit" 
+                    className="btn btn-success btn-lg"
+                    disabled={loading}
+                  >
+                    {loading ? 'Creating Account...' : 'Create Account'}
                   </button>
                 </div>
 

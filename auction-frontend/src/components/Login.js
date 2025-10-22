@@ -1,26 +1,37 @@
 ﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login, loading, error, setError } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [localError, setLocalError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    // Clear errors when user starts typing
+    setLocalError('');
+    if (setError) setError(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically authenticate with your backend
-    console.log('Login attempt:', formData);
-    alert('Login successful!');
-    navigate('/');
+    setLocalError('');
+
+    try {
+      await login(formData.email, formData.password);
+      // Navigate to home page on successful login
+      navigate('/');
+    } catch (err) {
+      setLocalError(err.message || 'Login failed. Please check your credentials.');
+    }
   };
 
   return (
@@ -32,6 +43,12 @@ const Login = () => {
               <h3 className="mb-0">Login to Your Account</h3>
             </div>
             <div className="card-body p-4">
+              {(localError || error) && (
+                <div className="alert alert-danger" role="alert">
+                  {localError || error}
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label fw-bold">Email Address</label>
@@ -44,6 +61,7 @@ const Login = () => {
                     onChange={handleChange}
                     placeholder="Enter your email"
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -58,6 +76,7 @@ const Login = () => {
                     onChange={handleChange}
                     placeholder="Enter your password"
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -73,8 +92,12 @@ const Login = () => {
                 </div>
 
                 <div className="d-grid mb-3">
-                  <button type="submit" className="btn btn-primary btn-lg">
-                    Sign In
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary btn-lg"
+                    disabled={loading}
+                  >
+                    {loading ? 'Signing In...' : 'Sign In'}
                   </button>
                 </div>
 

@@ -1,0 +1,593 @@
+﻿import React, { useState } from 'react';import React, { useState } from 'react';
+
+import { Link, useNavigate } from 'react-router-dom';import { Link, useNavigate } from 'react-router-dom';
+
+import { useAuth } from '../context/AuthContext';import { useAuth } from '../context/AuthContext';
+
+
+
+const Register = () => {const Register = () => {
+
+  const navigate = useNavigate();  const navigate = useNavigate();
+
+  const { register, loading, error, setError } = useAuth();  const { register, loading, error, setError } = useAuth();
+
+  const [formData, setFormData] = useState({  const [formData, setFormData] = useState({
+
+    firstName: '',    firstName: '',
+
+    lastName: '',    lastName: '',
+
+    email: '',    email: '',
+
+    password: '',    password: '',
+
+    confirmPassword: '',    confirmPassword: '',
+
+    role: 'Buyer', // Default role    role: 'Buyer', // Default role
+
+    agreeToTerms: false    agreeToTerms: false
+
+  });  });
+
+  const [localError, setLocalError] = useState('');  const [localError, setLocalError] = useState('');
+
+  const [successMessage, setSuccessMessage] = useState('');  const [successMessage, setSuccessMessage] = useState('');
+
+
+
+  const handleChange = (e) => {  const handleChange = (e) => {
+
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+
+    setFormData({    setFormData({
+
+      ...formData,      ...formData,
+
+      [e.target.name]: value      [e.target.name]: value
+
+    });    });
+
+    // Clear errors when user starts typing    // Clear errors when user starts typing
+
+    setLocalError('');    setLocalError('');
+
+    if (setError) setError(null);    if (setError) setError(null);
+
+  };  };
+
+
+
+  const handleSubmit = async (e) => {  const handleSubmit = async (e) => {
+
+    e.preventDefault();    e.preventDefault();
+
+    setLocalError('');    setLocalError('');
+
+    setSuccessMessage('');    setSuccessMessage('');
+
+        
+
+    // Validation    // Validation
+
+    if (formData.password !== formData.confirmPassword) {    if (formData.password !== formData.confirmPassword) {
+
+      setLocalError('Passwords do not match!');      setLocalError('Passwords do not match!');
+
+      return;      return;
+
+    }    }
+
+
+
+    if (formData.password.length < 6) {    if (formData.password.length < 6) {
+
+      setLocalError('Password must be at least 6 characters long');      setLocalError('Password must be at least 6 characters long');
+
+      return;      return;
+
+    }    }
+
+
+
+    if (!formData.agreeToTerms) {    if (!formData.agreeToTerms) {
+
+      setLocalError('Please agree to the terms and conditions');      setLocalError('Please agree to the terms and conditions');
+
+      return;      return;
+
+    }    }
+
+
+
+    try {    try {
+
+      const result = await register(      const result = await register(
+
+        formData.firstName,        formData.firstName,
+
+        formData.lastName,        formData.lastName,
+
+        formData.email,        formData.email,
+
+        formData.password,        formData.password,
+
+        formData.role        formData.role
+
+      );      );
+
+            
+
+      setSuccessMessage(result.message);      setSuccessMessage(result.message);
+
+      // Redirect to login after 2 seconds      // Redirect to login after 2 seconds
+
+      setTimeout(() => {      setTimeout(() => {
+
+        navigate('/login');        navigate('/login');
+
+      }, 2000);      }, 2000);
+
+    } catch (err) {    } catch (err) {
+
+      setLocalError(err.message || 'Registration failed. Please try again.');      setLocalError(err.message || 'Registration failed. Please try again.');
+
+    }    }
+
+  };  };
+
+
+
+  return (  return (
+
+    <div className="container mt-4">    <div className="container mt-4">
+
+      <div className="row justify-content-center">      <div className="row justify-content-center">
+
+        <div className="col-md-8 col-lg-6">        <div className="col-md-8 col-lg-6">
+
+          <div className="card shadow">          <div className="card shadow">
+
+            <div className="card-header bg-success text-white text-center">            <div className="card-header bg-success text-white text-center">
+
+              <h3 className="mb-0">Create New Account</h3>              <h3 className="mb-0">Create New Account</h3>
+
+            </div>            </div>
+
+            <div className="card-body p-4">            <div className="card-body p-4">
+
+              {(localError || error) && (              {(localError || error) && (
+
+                <div className="alert alert-danger" role="alert">                <div className="alert alert-danger" role="alert">
+
+                  {localError || error}                  {localError || error}
+
+                </div>                </div>
+
+              )}              )}
+
+
+
+              {successMessage && (              {successMessage && (
+
+                <div className="alert alert-success" role="alert">                <div className="alert alert-success" role="alert">
+
+                  {successMessage}                  {successMessage}
+
+                </div>                </div>
+
+              )}              )}
+
+                            
+
+              <form onSubmit={handleSubmit}>              <form onSubmit={handleSubmit}>
+
+                <div className="row">                <div className="row">
+
+                  <div className="col-md-6 mb-3">                  <div className="col-md-6 mb-3">
+
+                    <label htmlFor="firstName" className="form-label fw-bold">First Name</label>                    <label htmlFor="firstName" className="form-label fw-bold">First Name</label>
+
+                    <input                    <input
+
+                      type="text"                      type="text"
+
+                      className="form-control"                      className="form-control"
+
+                      id="firstName"                      id="firstName"
+
+                      name="firstName"                      name="firstName"
+
+                      value={formData.firstName}                      value={formData.firstName}
+
+                      onChange={handleChange}                      onChange={handleChange}
+
+                      placeholder="Enter your first name"                      placeholder="Enter your first name"
+
+                      required                      required
+
+                      disabled={loading}                      disabled={loading}
+
+                    />                    />
+
+                  </div>                  </div>
+
+
+
+                  <div className="col-md-6 mb-3">                  <div className="col-md-6 mb-3">
+
+                    <label htmlFor="lastName" className="form-label fw-bold">Last Name</label>                    <label htmlFor="lastName" className="form-label fw-bold">Last Name</label>
+
+                    <input                    <input
+
+                      type="text"                      type="text"
+
+                      className="form-control"                      className="form-control"
+
+                      id="lastName"                      id="lastName"
+
+                      name="lastName"                      name="lastName"
+
+                      value={formData.lastName}                      value={formData.lastName}
+
+                      onChange={handleChange}                      onChange={handleChange}
+
+                      placeholder="Enter your last name"                      placeholder="Enter your last name"
+
+                      required                      required
+
+                      disabled={loading}                      disabled={loading}
+
+                    />                    />
+
+                  </div>                  </div>
+
+                </div>                </div>
+
+
+
+                <div className="mb-3">                <div className="mb-3">
+
+                  <label htmlFor="email" className="form-label fw-bold">Email Address</label>                  <label htmlFor="email" className="form-label fw-bold">Email Address</label>
+
+                  <input                  <input
+
+                    type="email"                    type="email"
+
+                    className="form-control"                    className="form-control"
+
+                    id="email"                    id="email"
+
+                    name="email"                    name="email"
+
+                    value={formData.email}                    value={formData.email}
+
+                    onChange={handleChange}                    onChange={handleChange}
+
+                    placeholder="Enter your email"                    placeholder="Enter your email"
+
+                    required                    required
+
+                    disabled={loading}                    disabled={loading}
+
+                  />                  />
+
+                </div>                </div>
+
+
+
+                <div className="mb-3">                <div className="mb-3">
+
+                  <label htmlFor="role" className="form-label fw-bold">I want to:</label>                  <label htmlFor="role" className="form-label fw-bold">I want to:</label>
+
+                  <select                  <select
+
+                    className="form-select"                    className="form-select"
+
+                    id="role"                    id="role"
+
+                    name="role"                    name="role"
+
+                    value={formData.role}                    value={formData.role}
+
+                    onChange={handleChange}                    onChange={handleChange}
+
+                    disabled={loading}                    disabled={loading}
+
+                  >                  >
+
+                    <option value="Buyer">Buy items (Buyer)</option>                    <option value="Buyer">Buy items (Buyer)</option>
+
+                    <option value="Seller">Sell items (Seller)</option>                    <option value="Seller">Sell items (Seller)</option>
+
+                  </select>                  </select>
+
+                </div>                </div>
+
+
+
+                <div className="row">                <div className="row">
+
+                  <div className="col-md-6 mb-3">                  <div className="col-md-6 mb-3">
+
+                    <label htmlFor="password" className="form-label fw-bold">Password</label>                    <label htmlFor="password" className="form-label fw-bold">Password</label>
+
+                    <input                    <input
+
+                      type="password"                      type="password"
+
+                      className="form-control"                      className="form-control"
+
+                      id="password"                      id="password"
+
+                      name="password"                      name="password"
+
+                      value={formData.password}                      value={formData.password}
+
+                      onChange={handleChange}                      onChange={handleChange}
+
+                      placeholder="Create a password"                      placeholder="Create a password"
+
+                      required                      required
+
+                      disabled={loading}                      disabled={loading}
+
+                    />                    />
+
+                    <div className="form-text">                    <div className="form-text">
+
+                      Must be at least 6 characters                      Must be at least 6 characters
+
+                    </div>                    </div>
+
+                  </div>                  </div>
+
+
+
+                  <div className="col-md-6 mb-3">                  <div className="col-md-6 mb-3">
+
+                    <label htmlFor="confirmPassword" className="form-label fw-bold">Confirm Password</label>                    <label htmlFor="confirmPassword" className="form-label fw-bold">Confirm Password</label>
+
+                    <input                    <input
+
+                      type="password"                      type="password"
+
+                      className="form-control"                      className="form-control"
+
+                      id="confirmPassword"                      id="confirmPassword"
+
+                      name="confirmPassword"                      name="confirmPassword"
+
+                      value={formData.confirmPassword}                      value={formData.confirmPassword}
+
+                      onChange={handleChange}                      onChange={handleChange}
+
+                      placeholder="Confirm your password"                      placeholder="Confirm your password"
+
+                      required                      required
+
+                      disabled={loading}                      disabled={loading}
+
+                    />                    />
+
+                  </div>                  </div>
+
+                </div>                </div>
+
+
+
+                <div className="mb-4">                <div className="mb-4">
+
+                  <div className="form-check">                  <div className="form-check">
+
+                    <input                    <input
+
+                      className="form-check-input"                      className="form-check-input"
+
+                      type="checkbox"                      type="checkbox"
+
+                      id="agreeToTerms"                      id="agreeToTerms"
+
+                      name="agreeToTerms"                      name="agreeToTerms"
+
+                      checked={formData.agreeToTerms}                      checked={formData.agreeToTerms}
+
+                      onChange={handleChange}                      onChange={handleChange}
+
+                      required                      required
+
+                      disabled={loading}                      disabled={loading}
+
+                    />                    />
+
+                    <label className="form-check-label" htmlFor="agreeToTerms">                    <label className="form-check-label" htmlFor="agreeToTerms">
+
+                      I agree to the <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>                      I agree to the <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>
+
+                    </label>                    </label>
+
+                  </div>                  </div>
+
+                </div>                </div>
+
+
+
+                <div className="d-grid mb-3">                <div className="d-grid mb-3">
+
+                  <button                   <button 
+
+                    type="submit"                     type="submit" 
+
+                    className="btn btn-success btn-lg"                    className="btn btn-success btn-lg"
+
+                    disabled={loading}                    disabled={loading}
+
+                  >                  >
+
+                    {loading ? 'Creating Account...' : 'Create Account'}                    {loading ? 'Creating Account...' : 'Create Account'}
+
+                  </button>                  </button>
+
+                </div>                </div>
+
+
+
+                <div className="text-center">                <div className="text-center">
+
+                  <p className="mb-0">Already have an account?</p>                  <p className="mb-0">Already have an account?</p>
+
+                  <Link to="/login" className="btn btn-outline-success mt-2">                  <Link to="/login" className="btn btn-outline-success mt-2">
+
+                    Sign In Instead                    Sign In Instead
+
+                  </Link>                  </Link>
+
+                </div>                </div>
+
+              </form>              </form>
+
+            </div>            </div>
+
+          </div>          </div>
+
+        </div>        </div>
+
+      </div>      </div>
+
+    </div>    </div>
+
+  );  );
+
+};};
+
+
+
+export default Register;export default Register;
+
+
+  return (
+    <div className="container mt-4">
+      <div className="row justify-content-center">
+        <div className="col-md-8 col-lg-6">
+          <div className="card shadow">
+            <div className="card-header bg-success text-white text-center">
+              <h3 className="mb-0">Create New Account</h3>
+            </div>
+            <div className="card-body p-4">
+              <form onSubmit={handleSubmit}>
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="firstName" className="form-label fw-bold">First Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      placeholder="Enter your first name"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="lastName" className="form-label fw-bold">Last Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      placeholder="Enter your last name"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="email" className="form-label fw-bold">Email Address</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="password" className="form-label fw-bold">Password</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Create a password"
+                      required
+                    />
+                    <div className="form-text">
+                      Must be at least 8 characters
+                    </div>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="confirmPassword" className="form-label fw-bold">Confirm Password</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Confirm your password"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <div className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      id="agreeToTerms"
+                      name="agreeToTerms"
+                      checked={formData.agreeToTerms}
+                      onChange={handleChange}
+                      required
+                    />
+                    <label className="form-check-label" htmlFor="agreeToTerms">
+                      I agree to the <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="d-grid mb-3">
+                  <button type="submit" className="btn btn-success btn-lg">
+                    Create Account
+                  </button>
+                </div>
+
+                <div className="text-center">
+                  <p className="mb-0">Already have an account?</p>
+                  <Link to="/login" className="btn btn-outline-success mt-2">
+                    Sign In Instead
+                  </Link>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Register;
