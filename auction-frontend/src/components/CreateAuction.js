@@ -1,54 +1,79 @@
 ﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/api'; // your axios instance
 
 const CreateAuction = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     description: '',
-    category: '',
-    startingPrice: '',
-    reservePrice: '',
-    bidIncrement: '',
-    duration: '7',
-    condition: 'excellent',
-    imageUrl: ''
+    startPrice: '',
+    startTime: '',
+    endTime: '',
+    minBidIncrement: '',
+    images: []
   });
 
-  const categories = [
-    'Jewelry', 'Electronics', 'Art', 'Vehicles', 
-    'Fashion', 'Collectibles', 'Home', 'Sports'
-  ];
-
-  const conditions = [
-    { value: 'new', label: 'New' },
-    { value: 'excellent', label: 'Excellent' },
-    { value: 'good', label: 'Good' },
-    { value: 'fair', label: 'Fair' },
-    { value: 'poor', label: 'Poor' }
-  ];
-
-  const durations = [
-    { value: '1', label: '1 Day' },
-    { value: '3', label: '3 Days' },
-    { value: '7', label: '7 Days' },
-    { value: '14', label: '14 Days' },
-    { value: '30', label: '30 Days' }
-  ];
-
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleFileChange = (e) => {
+    setFormData(prev => ({ ...prev, images: Array.from(e.target.files) }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log('Auction created:', formData);
-    alert('Auction created successfully!');
-    navigate('/auctions');
+
+    const seller = JSON.parse(localStorage.getItem('user'));
+    if (!seller) {
+      alert('Please login as seller.');
+      navigate('/login');
+      return;
+    }
+
+    // Build FormData for multipart/form-data
+    const data = new FormData();
+    data.append('sellerId', seller.id);  // backend expects SellerId
+    data.append('name', formData.name);
+    data.append('description', formData.description);
+    data.append('startPrice', formData.startPrice);
+    data.append('startTime', formData.startTime);
+    data.append('endTime', formData.endTime);
+    data.append('minBidIncrement', formData.minBidIncrement);
+
+    // Append multiple images
+    formData.images.forEach(file => {
+      data.append('images', file);  // backend should accept IFormFile collection named 'images'
+    });
+
+    try {
+      const response = await api.post('/ProductsApi', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      const productId = response.data.id;
+      console.log('Auction created:', response.data);
+
+      if (formData.images.length > 0) {
+        const imageData = new FormData();
+        formData.images.forEach(file => imageData.append('images', file));
+
+        await api.post(`/ProductsApi/${productId}/images`, imageData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      }
+      
+      alert('Auction created successfully!');
+      navigate('/auctions');
+    } catch (error) {
+      console.error('Error creating auction:', error.response?.data || error.message);
+      alert('Failed to create auction. Please try again.');
+    }
   };
 
   return (
@@ -61,189 +86,97 @@ const CreateAuction = () => {
             </div>
             <div className="card-body p-4">
               <form onSubmit={handleSubmit}>
-                {/* Item Details */}
-                <div className="mb-4">
-                  <h4 className="border-bottom pb-2">Item Details</h4>
-                  
-                  <div className="mb-3">
-                    <label htmlFor="title" className="form-label fw-bold">Item Title *</label>
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Name *</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="form-control"
+                    required
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Description *</label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    className="form-control"
+                    rows="4"
+                    required
+                  />
+                </div>
+
+                <div className="row">
+                  <div className="col-md-4 mb-3">
+                    <label className="form-label fw-bold">Start Price ($) *</label>
                     <input
-                      type="text"
-                      className="form-control"
-                      id="title"
-                      name="title"
-                      value={formData.title}
+                      type="number"
+                      name="startPrice"
+                      value={formData.startPrice}
                       onChange={handleChange}
-                      placeholder="e.g., Vintage Rolex Watch 1960s"
+                      min="0"
+                      step="0.01"
+                      className="form-control"
                       required
                     />
                   </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="description" className="form-label fw-bold">Description *</label>
-                    <textarea
-                      className="form-control"
-                      id="description"
-                      name="description"
-                      rows="4"
-                      value={formData.description}
-                      onChange={handleChange}
-                      placeholder="Describe your item in detail..."
-                      required
-                    ></textarea>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="category" className="form-label fw-bold">Category *</label>
-                      <select
-                        className="form-select"
-                        id="category"
-                        name="category"
-                        value={formData.category}
-                        onChange={handleChange}
-                        required
-                      >
-                        <option value="">Select a category</option>
-                        {categories.map(category => (
-                          <option key={category} value={category}>{category}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="condition" className="form-label fw-bold">Condition *</label>
-                      <select
-                        className="form-select"
-                        id="condition"
-                        name="condition"
-                        value={formData.condition}
-                        onChange={handleChange}
-                        required
-                      >
-                        {conditions.map(condition => (
-                          <option key={condition.value} value={condition.value}>
-                            {condition.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="imageUrl" className="form-label fw-bold">Image URL</label>
+                  <div className="col-md-4 mb-3">
+                    <label className="form-label fw-bold">Min Bid Increment ($) *</label>
                     <input
-                      type="url"
-                      className="form-control"
-                      id="imageUrl"
-                      name="imageUrl"
-                      value={formData.imageUrl}
+                      type="number"
+                      name="minBidIncrement"
+                      value={formData.minBidIncrement}
                       onChange={handleChange}
-                      placeholder="https://example.com/image.jpg"
+                      min="1"
+                      step="0.01"
+                      className="form-control"
+                      required
                     />
-                    <div className="form-text">
-                      Provide a URL to your item's image. We recommend using image hosting services.
-                    </div>
+                  </div>
+                  <div className="col-md-4 mb-3">
+                    <label className="form-label fw-bold">Images *</label>
+                    <input
+                      type="file"
+                      name="images"
+                      onChange={handleFileChange}
+                      className="form-control"
+                      multiple
+                      required
+                    />
                   </div>
                 </div>
 
-                {/* Auction Settings */}
-                <div className="mb-4">
-                  <h4 className="border-bottom pb-2">Auction Settings</h4>
-                  
-                  <div className="row">
-                    <div className="col-md-4 mb-3">
-                      <label htmlFor="startingPrice" className="form-label fw-bold">Starting Price ($) *</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        id="startingPrice"
-                        name="startingPrice"
-                        value={formData.startingPrice}
-                        onChange={handleChange}
-                        min="0"
-                        step="0.01"
-                        required
-                      />
-                    </div>
-
-                    <div className="col-md-4 mb-3">
-                      <label htmlFor="reservePrice" className="form-label fw-bold">Reserve Price ($)</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        id="reservePrice"
-                        name="reservePrice"
-                        value={formData.reservePrice}
-                        onChange={handleChange}
-                        min="0"
-                        step="0.01"
-                        placeholder="Optional"
-                      />
-                      <div className="form-text">
-                        Minimum price you're willing to accept
-                      </div>
-                    </div>
-
-                    <div className="col-md-4 mb-3">
-                      <label htmlFor="bidIncrement" className="form-label fw-bold">Bid Increment ($) *</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        id="bidIncrement"
-                        name="bidIncrement"
-                        value={formData.bidIncrement}
-                        onChange={handleChange}
-                        min="1"
-                        step="1"
-                        required
-                      />
-                      <div className="form-text">
-                        Minimum bid increase
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="duration" className="form-label fw-bold">Auction Duration *</label>
-                    <select
-                      className="form-select"
-                      id="duration"
-                      name="duration"
-                      value={formData.duration}
-                      onChange={handleChange}
-                      required
-                    >
-                      {durations.map(duration => (
-                        <option key={duration.value} value={duration.value}>
-                          {duration.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Terms and Submit */}
-                <div className="mb-4">
-                  <div className="form-check">
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label fw-bold">Start Time *</label>
                     <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="terms"
+                      type="datetime-local"
+                      name="startTime"
+                      value={formData.startTime}
+                      onChange={handleChange}
+                      className="form-control"
                       required
                     />
-                    <label className="form-check-label" htmlFor="terms">
-                      I agree to the Terms of Service and understand that I'm responsible for accurately describing my item.
-                    </label>
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label fw-bold">End Time *</label>
+                    <input
+                      type="datetime-local"
+                      name="endTime"
+                      value={formData.endTime}
+                      onChange={handleChange}
+                      className="form-control"
+                      required
+                    />
                   </div>
                 </div>
 
                 <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary me-md-2"
-                    onClick={() => navigate('/auctions')}
-                  >
+                  <button type="button" className="btn btn-secondary me-md-2" onClick={() => navigate('/auctions')}>
                     Cancel
                   </button>
                   <button type="submit" className="btn btn-primary px-4">
