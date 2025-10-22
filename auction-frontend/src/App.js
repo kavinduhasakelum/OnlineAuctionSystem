@@ -62,13 +62,18 @@ function App() {
           )} />
 
           {/* Private Routes */}
+          <Route path="/product/:id" element={
+            <PrivateRoute roles={['Seller']}>
+              <AuctionDetail /> {/* Reusing AuctionDetail for simplicity */}
+            </PrivateRoute>
+          }/>
           <Route path="/buyer/home" element={
             <PrivateRoute roles={['Buyer']}>
               <BuyerHome />
             </PrivateRoute>
           }/>
           <Route path="/auction/:id" element={
-            <PrivateRoute roles={['Buyer']}>
+            <PrivateRoute roles={['Buyer', 'Seller', 'Admin']}>
               <AuctionDetail />
             </PrivateRoute>
           }/>
