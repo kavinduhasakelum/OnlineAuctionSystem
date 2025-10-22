@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/api'; // your axios instance
+import api from '../api/api'; // axios instance
 
 const CreateAuction = () => {
   const navigate = useNavigate();
@@ -20,7 +20,8 @@ const CreateAuction = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData(prev => ({ ...prev, images: Array.from(e.target.files) }));
+    const files = Array.from(e.target.files);
+    setFormData(prev => ({ ...prev, images: files }));
   };
 
   const handleSubmit = async (e) => {
@@ -33,41 +34,33 @@ const CreateAuction = () => {
       return;
     }
 
-    // Build FormData for multipart/form-data
-    const data = new FormData();
-    data.append('sellerId', seller.id);  // backend expects SellerId
-    data.append('name', formData.name);
-    data.append('description', formData.description);
-    data.append('startPrice', formData.startPrice);
-    data.append('startTime', formData.startTime);
-    data.append('endTime', formData.endTime);
-    data.append('minBidIncrement', formData.minBidIncrement);
-
-    // Append multiple images
-    formData.images.forEach(file => {
-      data.append('images', file);  // backend should accept IFormFile collection named 'images'
-    });
-
     try {
-      const response = await api.post('/ProductsApi', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+      // ✅ Build FormData (multipart/form-data)
+      const data = new FormData();
+      data.append('SellerId', seller.id);
+      data.append('Name', formData.name);
+      data.append('Description', formData.description);
+      data.append('StartPrice', formData.startPrice);
+      data.append('StartTime', formData.startTime);
+      data.append('EndTime', formData.endTime);
+      data.append('MinBidIncrement', formData.minBidIncrement);
+
+      // ✅ Append all images using correct key (case-sensitive for .NET binding)
+      formData.images.forEach(file => {
+        data.append('Images', file);
       });
-      const productId = response.data.id;
-      console.log('Auction created:', response.data);
 
-      if (formData.images.length > 0) {
-        const imageData = new FormData();
-        formData.images.forEach(file => imageData.append('images', file));
-
-        await api.post(`/ProductsApi/${productId}/images`, imageData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
+      // 🧠 Optional: Debug to verify keys before sending
+      for (let [key, value] of data.entries()) {
+        console.log(key, value);
       }
-      
+
+      // ✅ Send request to backend
+      const response = await api.post('/ProductsApi', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      console.log('Auction created:', response.data);
       alert('Auction created successfully!');
       navigate('/auctions');
     } catch (error) {
@@ -86,6 +79,7 @@ const CreateAuction = () => {
             </div>
             <div className="card-body p-4">
               <form onSubmit={handleSubmit}>
+                {/* Name */}
                 <div className="mb-3">
                   <label className="form-label fw-bold">Name *</label>
                   <input
@@ -98,6 +92,7 @@ const CreateAuction = () => {
                   />
                 </div>
 
+                {/* Description */}
                 <div className="mb-3">
                   <label className="form-label fw-bold">Description *</label>
                   <textarea
@@ -110,6 +105,7 @@ const CreateAuction = () => {
                   />
                 </div>
 
+                {/* Price and Images */}
                 <div className="row">
                   <div className="col-md-4 mb-3">
                     <label className="form-label fw-bold">Start Price ($) *</label>
@@ -124,6 +120,7 @@ const CreateAuction = () => {
                       required
                     />
                   </div>
+
                   <div className="col-md-4 mb-3">
                     <label className="form-label fw-bold">Min Bid Increment ($) *</label>
                     <input
@@ -137,11 +134,13 @@ const CreateAuction = () => {
                       required
                     />
                   </div>
+
                   <div className="col-md-4 mb-3">
                     <label className="form-label fw-bold">Images *</label>
                     <input
                       type="file"
                       name="images"
+                      accept="image/*"
                       onChange={handleFileChange}
                       className="form-control"
                       multiple
@@ -150,6 +149,7 @@ const CreateAuction = () => {
                   </div>
                 </div>
 
+                {/* Time */}
                 <div className="row">
                   <div className="col-md-6 mb-3">
                     <label className="form-label fw-bold">Start Time *</label>
@@ -162,6 +162,7 @@ const CreateAuction = () => {
                       required
                     />
                   </div>
+
                   <div className="col-md-6 mb-3">
                     <label className="form-label fw-bold">End Time *</label>
                     <input
@@ -175,8 +176,13 @@ const CreateAuction = () => {
                   </div>
                 </div>
 
+                {/* Buttons */}
                 <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                  <button type="button" className="btn btn-secondary me-md-2" onClick={() => navigate('/auctions')}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary me-md-2"
+                    onClick={() => navigate('/auctions')}
+                  >
                     Cancel
                   </button>
                   <button type="submit" className="btn btn-primary px-4">
