@@ -12,8 +12,16 @@ import Login from './components/Login';
 import Register from './components/Register';
 import CreateAuction from './components/CreateAuction';
 import BuyerHome from "./components/buyer/BuyerHome";
+import BuyerAuctionDetail from "./components/buyer/AuctionDetail";
+import MyBids from "./components/buyer/MyBids";
+import MyOrders from "./components/buyer/MyOrders";
 import SellerHome from "./components/seller/SellerHome";
+import CreateProduct from "./components/seller/CreateProduct";
+import ProductDetail from "./components/seller/ProductDetail";
 import AdminHome from "./components/admin/AdminHome";
+import ManageUsers from "./components/admin/ManageUsers";
+import ManageAuctions from "./components/admin/ManageAuctions";
+import AdminDashboard from "./components/admin/AdminDashboard";
 import Profile from "./components/Profile";
 import './App.css';
 
@@ -72,6 +80,21 @@ function App() {
               <BuyerHome />
             </PrivateRoute>
           }/>
+          <Route path="/buyer/auction/:id" element={
+            <PrivateRoute roles={['Buyer']}>
+              <BuyerAuctionDetail />
+            </PrivateRoute>
+          }/>
+          <Route path="/buyer/my-bids" element={
+            <PrivateRoute roles={['Buyer']}>
+              <MyBids />
+            </PrivateRoute>
+          }/>
+          <Route path="/buyer/my-orders" element={
+            <PrivateRoute roles={['Buyer']}>
+              <MyOrders />
+            </PrivateRoute>
+          }/>
           <Route path="/auction/:id" element={
             <PrivateRoute roles={['Buyer', 'Seller', 'Admin']}>
               <AuctionDetail />
@@ -82,9 +105,34 @@ function App() {
               <SellerHome />
             </PrivateRoute>
           }/>
+          <Route path="/seller/create-product" element={
+            <PrivateRoute roles={['Seller', 'Admin']}>
+              <CreateProduct />
+            </PrivateRoute>
+          }/>
+          <Route path="/seller/products/:id" element={
+            <PrivateRoute roles={['Seller', 'Admin']}>
+              <ProductDetail />
+            </PrivateRoute>
+          }/>
           <Route path="/admin/home" element={
             <PrivateRoute roles={['Admin']}>
               <AdminHome />
+            </PrivateRoute>
+          }/>
+          <Route path="/admin/users" element={
+            <PrivateRoute roles={['Admin']}>
+              <ManageUsers />
+            </PrivateRoute>
+          }/>
+          <Route path="/admin/auctions" element={
+            <PrivateRoute roles={['Admin']}>
+              <ManageAuctions />
+            </PrivateRoute>
+          }/>
+          <Route path="/admin/dashboard" element={
+            <PrivateRoute roles={['Admin']}>
+              <AdminDashboard />
             </PrivateRoute>
           }/>
           <Route path="/profile" element={

@@ -103,3 +103,25 @@
   border-color: #667eea;
   box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 }
+
+/* Hover effects for cards */
+.hover-shadow-lg:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+}
+
+/* Bidding styles */
+.bid-input {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.auction-ended {
+  opacity: 0.7;
+}
+
+/* Table hover effects */
+.table-hover tbody tr:hover {
+  background-color: rgba(102, 126, 234, 0.05);
+}

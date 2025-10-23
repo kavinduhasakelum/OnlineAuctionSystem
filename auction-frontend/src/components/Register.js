@@ -45,7 +45,7 @@ const Register = () => {
       Role: formData.role
     };
 
-    const response = await api.post('/usersapi/register', payload);
+    const response = await api.post('/UsersApi/register', payload);
 
     console.log('✅ Registration success:', response.data);
     alert('Registration successful! Welcome to Elite Auctions!');
@@ -155,7 +155,7 @@ const Register = () => {
                   >
                     <option value="Buyer">Buyer</option>
                     <option value="Seller">Seller</option>
-                    <option value="Admin">Admin</option>
+
                   </select>
                 </div>
 

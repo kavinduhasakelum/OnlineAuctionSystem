@@ -20,7 +20,7 @@ const Login = () => {
   e.preventDefault();
 
   try {
-    const response = await api.post("/usersapi/login", {
+    const response = await api.post("/UsersApi/login", {
       email: formData.email,
       password: formData.password,
     });

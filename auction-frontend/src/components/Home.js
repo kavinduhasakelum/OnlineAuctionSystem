@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 const Home = () => {
   // const featuredAuctions = [
@@ -94,7 +95,7 @@ const Home = () => {
                   <img 
                     src={
                       auction.images && auction.images.length > 0 
-                        ? auction.images[0].url 
+                        ? getImageUrl(auction.images[0].imageUrl)
                         : 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400&h=300&fit=crop'
                     }
                     className="card-img-top" 

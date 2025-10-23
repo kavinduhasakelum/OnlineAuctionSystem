@@ -26,18 +26,71 @@ const Navigation = () => {
             <li className="nav-item">
               <Link className="nav-link" to="/">Home</Link>
             </li>
+            
+            {/* Buyer Dashboard Link */}
+            {user?.user?.role === 'Buyer' && (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/buyer">
+                    <i className="bi bi-grid me-1"></i>Dashboard
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/buyer/my-bids">
+                    <i className="bi bi-list-check me-1"></i>My Bids
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/buyer/my-orders">
+                    <i className="bi bi-bag-check me-1"></i>My Orders
+                  </Link>
+                </li>
+              </>
+            )}
+            
+            {/* Seller Dashboard Link */}
+            {user?.user?.role === 'Seller' && (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/seller/home">
+                    <i className="bi bi-grid me-1"></i>Dashboard
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/seller/create-product">
+                    <i className="bi bi-plus-circle me-1"></i>Create Product
+                  </Link>
+                </li>
+              </>
+            )}
+            
+            {/* Admin Dashboard Link */}
+            {user?.user?.role === 'Admin' && (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/admin/dashboard">
+                    <i className="bi bi-speedometer2 me-1"></i>Dashboard
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/admin/users">
+                    <i className="bi bi-people me-1"></i>Manage Users
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/admin/auctions">
+                    <i className="bi bi-hammer me-1"></i>Manage Auctions
+                  </Link>
+                </li>
+              </>
+            )}
+            
             <li className="nav-item">
               <Link className="nav-link" to="/auctions">Auctions</Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/categories">Categories</Link>
             </li>
-            {/* Show create auction only for Seller or Admin */}
-            {(user?.user?.role === 'Seller' || user?.user?.role === 'Admin') && (
-              <li className="nav-item">
-                <Link className="nav-link" to="/create-auction">Create Auction</Link>
-              </li>
-            )}
           </ul>
           <ul className="navbar-nav">
             {user ? (

@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/api'; // axios instance
+import { getImageUrl } from '../utils/imageHelper';
 
 const Auctions = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -108,7 +109,7 @@ const Auctions = () => {
                     <img 
                       src={
                         auction.images && auction.images.length > 0 
-                          ? auction.images[0].url 
+                          ? getImageUrl(auction.images[0].imageUrl)
                           : 'https://via.placeholder.com/400x300?text=No+Image'
                       }
                       className="card-img-top" 
